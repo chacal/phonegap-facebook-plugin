@@ -394,7 +394,7 @@ public class ConnectPlugin extends CordovaPlugin {
             //In Android all WebDialogs require a not null Session object.
             boolean canPresentShareDialog = isShareDialog && (FacebookDialog.canPresentShareDialog(me.cordova.getActivity(), FacebookDialog.ShareDialogFeature.SHARE_DIALOG));
             //Must be an active session when is not a Shared dialog or if the Share dialog cannot be presented.
-            boolean requiresAnActiveSession = (!isShareDialog) || (!canPresentShareDialog);
+            boolean requiresAnActiveSession = !isShareDialog;
             if (requiresAnActiveSession) {
                 Session session = Session.getActiveSession();
                 if (!checkActiveSession(session)) {
@@ -460,7 +460,13 @@ public class ConnectPlugin extends CordovaPlugin {
                     // Fallback. For example, publish the post using the Feed Dialog
                     Runnable runnable = new Runnable() {
                         public void run() {
-                            WebDialog feedDialog = (new WebDialog.FeedDialogBuilder(me.cordova.getActivity(), Session.getActiveSession(), paramBundle)).setOnCompleteListener(dialogCallback).build();
+                            WebDialog feedDialog;
+                            Session session = Session.getActiveSession();
+                            if(checkActiveSession(session)) {
+                                feedDialog = (new WebDialog.FeedDialogBuilder(me.cordova.getActivity(), session, paramBundle)).setOnCompleteListener(dialogCallback).build();
+                            } else {
+                                feedDialog = (new WebDialog.FeedDialogBuilder(me.cordova.getActivity(), (String)null, paramBundle)).setOnCompleteListener(dialogCallback).build();
+                            }
                             feedDialog.show();
                         }
                     };
